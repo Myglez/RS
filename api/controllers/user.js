@@ -1,6 +1,7 @@
 'use strict'
 
 var bcrypt = require('bcrypt-nodejs');
+const user = require('../models/user');
 
 var User = require('../models/user');
 
@@ -65,8 +66,34 @@ function saveUser(req,res){
     }
 }
 
+function loginUser(req,res){
+    var params = req.body;
+
+    var email = params.email;
+    var password = params.password;
+
+    user.findOne({email: email},(err,user) =>{
+
+        if(err) return res.status(500).send({message: 'error en la peticion'});
+
+        if(user){
+            bcrypt.compare(password, user.password,(err,check) =>{
+                if(check){
+                    //devolver datos de usuario
+                    return res.status(200).send({user});
+                }else{
+                    return res.status(404).send({message: 'error usuario o contraseña incorrectas'});
+                }
+            });
+        }else{
+            return res.status(404).send({message: 'error usuario incorrecto'});
+        }
+    });
+}
+
 module.exports = {
     home,
     test,
-    saveUser
+    saveUser,
+    loginUser
 }
