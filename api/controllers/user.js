@@ -31,8 +31,7 @@ function saveUser(req,res){
         user.role = 'ROLE_USER';
         user.image = null;
 
-//control de usuarios duplicados
-
+        //control de usuarios duplicados
         User.find({$or: [
             {email: user.email.toLowerCase()},
             {nick: user.nick.toLowerCase()}
@@ -42,7 +41,7 @@ function saveUser(req,res){
             if(users && users.length >= 1){
                 return res.status(200).send({message: 'El usuario ya existe'});
             }else{
-//cifra el password y guarda los datos
+                //cifra el password y guarda los datos
                 bcrypt.hash(params.password, null, null,(err,hash)=>{
                     user.password = hash;
 
