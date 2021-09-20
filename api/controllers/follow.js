@@ -6,6 +6,7 @@ var mongoosePaginate = require('mongoose-pagination');
 
 var User = require('../models/user');
 var Follow = require('../models/follow');
+const follow = require('../models/follow');
 
 function saveFollow(req,res){
     var params = req.body;
@@ -21,6 +22,17 @@ function saveFollow(req,res){
     });
 }
 
+function unFollow(req,res){
+    var userId = req.user.sub;
+    var followId = req.params.id;
+
+    follow.find({'user':userId, 'followed':followId}).remove((err)=>{
+        if(err) return res.status(500).send({message: 'error accion no disponible'});
+        return res.status(200).send({message: 'follow eliminado'});
+    })
+}
+
 module.exports = {
-    saveFollow
+    saveFollow,
+    unFollow
 }
