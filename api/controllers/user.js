@@ -3,6 +3,7 @@
 var bcrypt = require('bcrypt-nodejs');
 
 var mongoosePaginate = require('mongoose-pagination');
+
 var User = require('../models/user');
 var jwt = require('../services/jwt');
 
@@ -131,11 +132,27 @@ function getUsers(req,res){
     });
 }
 
+function updateUser(req,res){
+    var userId = req.params.id;
+    var update = req.body;
+    // borrar prpiedad password
+    delete update.password;
+    if(userId != req.user.sub){
+        res.status(500).send({message:'no tienes los permisos necesarios'});
+    }
+    User.findByIdAndUpdate(userId, update, {new: true}, (err,userUpdated)=>{
+        if(err) return res.status(500).send({message:'error en la peticion'});
+        if(!userUpdated) return res.status(404).send({message:'no se ha podido actualizar el usuario'});
+        return res.status(200).send({user: userUpdated});
+    })
+}
+
 module.exports = {
     home,
     test,
     saveUser,
     loginUser,
     getUser,
-    getUsers
+    getUsers,
+    updateUser
 }
