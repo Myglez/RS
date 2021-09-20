@@ -6,8 +6,10 @@ var fs = require('fs');
 var path = require('path');
 
 var User = require('../models/user');
+var Follow = require('../models/follow')
 var jwt = require('../services/jwt');
 const { exists } = require('../models/user');
+const follow = require('../models/follow');
 
 
 function home(req,res){
@@ -111,7 +113,11 @@ function getUser(req,res){
 
         if(!user) return res.status(404).send({message: 'el usuario no existe'});
 
-        return res.status(200).send({user}); 
+        Follow.findOne({"user":req.user.sub,"followed":userId}).exec((err, follow)=>{
+            if(err) return res.status(500).send({message: 'error al comprobar el seguimiento'});
+
+            return res.status(200).send({user, follow});
+        }) 
     })
 }
 
@@ -192,6 +198,7 @@ function removeFilesOfUploads(res,file_Path,message){
         return res.status(200).send({message: message});
     });
 }
+
 function getImageFile(req,res){
     var image_file = req.params.imageFile
     var path_file = './uploads/users/'+image_file;
