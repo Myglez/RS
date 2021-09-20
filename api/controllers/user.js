@@ -1,8 +1,9 @@
 'use strict'
 //modulos
 var bcrypt = require('bcrypt-nodejs');
-
 var mongoosePaginate = require('mongoose-pagination');
+var fs = require('fs');
+var path = require('path');
 
 var User = require('../models/user');
 var jwt = require('../services/jwt');
@@ -26,6 +27,7 @@ function saveUser(req,res){
     var user = new User();
 
     if(params.name && params.surname && params.nick && params.email && params.password){
+
         user.name = params.name;
         user.surname = params.surname;
         user.nick = params.nick;
@@ -147,6 +149,49 @@ function updateUser(req,res){
     })
 }
 
+function uploadImage(req,res){
+    var userId = req.params.id;
+
+    if(req.files){
+        // ruta del archivo
+        var file_Path = req.files.image.path;
+        // corta la ruta desde las "/" y lo convierte en un array
+        var file_split = file_Path.split('/');
+        //contiene el nombre del archivo
+        var file_name = file_split[2];
+        //toma el nombre y lo corta desde el "." y lo convierte en un array 
+        var ext_split = file_name.split('.');
+
+        if(userId != req.user.sub){
+            return removeFilesOfUploads(res, file_Path, 'no tienes los permisos necesarios');
+        }
+
+        //toma la extension del arreglo
+        var file_ext = ext_split[1];
+
+        if(file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif'){
+            //actualiza el documento de usuario logeado
+            User.findByIdAndUpdate(userId, {image: file_name}, {new:true}, (err, userUpdated)=>{
+
+                if(err) return res.status(500).send({message:'error en la peticion'});
+                if(!userUpdated) return res.status(404).send({message:'no se ha podido actualizar el usuario'});
+                return res.status(200).send({user: userUpdated});
+            })
+        }else{
+            return removeFilesOfUploads(res, file_Path, 'extension no valida');
+        }
+
+    }else{
+        return res.status(200).send({message:'no se han subido archivos'});
+    }
+}
+
+function removeFilesOfUploads(res,file_Path,message){
+    fs.unlink(file_Path, (err)=>{
+        return res.status(200).send({message: message});
+    });
+}
+
 module.exports = {
     home,
     test,
@@ -154,5 +199,6 @@ module.exports = {
     loginUser,
     getUser,
     getUsers,
-    updateUser
+    updateUser,
+    uploadImage
 }
