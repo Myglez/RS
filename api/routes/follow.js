@@ -9,5 +9,6 @@ api.post('/follow', md_auth.ensureAuth, FollowConroller.saveFollow);
 api.delete('/follow/:id', md_auth.ensureAuth, FollowConroller.unFollow);
 api.get('/following/:id?/:page?', md_auth.ensureAuth, FollowConroller.getFollowingUsers);
 api.get('/followed/:id?/:page?', md_auth.ensureAuth, FollowConroller.getFollewedUsers);
+api.get('/get-my-follows/:followed?', md_auth.ensureAuth, FollowConroller.getMyFollows);
 
 module.exports = api;
