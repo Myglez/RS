@@ -8,8 +8,6 @@ var path = require('path');
 var User = require('../models/user');
 var Follow = require('../models/follow')
 var jwt = require('../services/jwt');
-const { exists } = require('../models/user');
-const follow = require('../models/follow');
 
 
 function home(req,res){
@@ -113,11 +111,13 @@ function getUser(req,res){
 
         if(!user) return res.status(404).send({message: 'el usuario no existe'});
 
-        Follow.findOne({"user":req.user.sub,"followed":userId}).exec((err, follow)=>{
-            if(err) return res.status(500).send({message: 'error al comprobar el seguimiento'});
-
-            return res.status(200).send({user, follow});
-        }) 
+        followThisUser(req.user.sub, userId).then((value)=>{
+            return res.status(200).send({
+                user,
+                following: value.following,
+                followed: value.followed
+            });
+        })
     })
 }
 
@@ -140,6 +140,28 @@ function getUsers(req,res){
         })
     });
 }
+//>>>>>>>>>>>>>>>>>>>>>solo si hay problemas con los seguidos y segidores!!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+async function followThisUser(identity_user_id, user_id){
+    //invertir user_id con indentity_user_id
+    var following = await Follow.findOne({ "user": user_id, "followed": identity_user_id }).exec().then((follow) => {
+        return follow;
+    }).catch((err) => {
+        return handleError(err);
+    });
+ 
+    var followed = await Follow.findOne({ "user": identity_user_id, "followed": user_id }).exec().then((follow) => {
+        console.log(follow);
+        return follow;
+    }).catch((err) => {
+        return handleError(err);
+    });
+ 
+ 
+    return {
+        following: following,
+        followed: followed
+    }
+} 
 
 function updateUser(req,res){
     var userId = req.params.id;
