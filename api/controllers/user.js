@@ -133,14 +133,18 @@ function getUsers(req,res){
 
         if(!users) return res.status(404).send({message:'no hay usuarios disponibles'});
 
-        return res.status(200).send({
-            users,
-            total,
-            pages: Math.ceil(total/itemsPerPage)
-        })
+        followUserIds(identity_user_id).then((value)=>{
+            return res.status(200).send({
+                users,
+                users_following: value.following,
+                users_followers: value.followed,
+                total,
+                pages: Math.ceil(total/itemsPerPage)
+            });
+        });
     });
 }
-//>>>>>>>>>>>>>>>>>>>>>solo si hay problemas con los seguidos y segidores!!!!<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//>>>>>>>>>>>>>>>>>>>>>>>>> solo si hay problemas con los seguidos y segidores!!!! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\\
 async function followThisUser(identity_user_id, user_id){
     //invertir user_id con indentity_user_id
     var following = await Follow.findOne({ "user": user_id, "followed": identity_user_id }).exec().then((follow) => {
@@ -162,6 +166,36 @@ async function followThisUser(identity_user_id, user_id){
         followed: followed
     }
 } 
+
+async function followUserIds(user_id){
+    var following = await Follow.find({"user":user_id}).select({'_id':0,'__v':0,'user':0}).exec().then((follows)=>{
+        return follows;
+    }).catch((err) => {
+        return handleError(err);
+    });
+
+    var followed = await Follow.find({"followed":user_id}).select({'_id':0,'__v':0,'followed':0}).exec().then((follows)=>{
+        return follows;
+    }).catch((err) => {
+        return handleError(err);
+    });
+    //procesar followings
+    var following_clean = [];
+
+    following.forEach((follow)=>{
+        following_clean.push(follow.followed);
+    });
+    // procesar followers
+    var followed_clean = [];
+    followed.forEach((follow)=>{
+        followed_clean.push(follow.user);
+    });
+
+    return{
+        following: following_clean,
+        followed: followed_clean
+    }
+}
 
 function updateUser(req,res){
     var userId = req.params.id;
