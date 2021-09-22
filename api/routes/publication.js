@@ -12,5 +12,6 @@ api.get('/pub-test',md_auth.ensureAuth, PublicationControler.test);
 api.post('/publication',md_auth.ensureAuth, PublicationControler.savePost);
 api.get('/publications/:page?',md_auth.ensureAuth, PublicationControler.getPosts);
 api.get('/publication/:id',md_auth.ensureAuth, PublicationControler.getPost);
+api.delete('/publication/:id',md_auth.ensureAuth, PublicationControler.deletePost);
 
 module.exports = api;

@@ -71,9 +71,18 @@ function getPost(req, res){
     });
 }
 
+function deletePost(req, res){
+    var publicationId = req.params.id;
+    Publication.find({'user': req.user.sub,'_id': publicationId}).remove((err)=>{
+        if(err) return res.status(500).send({message:'error al borrar publicacion'});
+        return res.status(200).send({message: 'publicacion eliminada'});
+    });
+}
+
 module.exports = {
     test,
     savePost,
     getPosts,
-    getPost
+    getPost,
+    deletePost
 }
