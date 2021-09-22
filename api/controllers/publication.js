@@ -8,6 +8,7 @@ var mongoosePaginate = require('mongoose-pagination');
 var Publication = require('../models/publication');
 var User = require('../models/user');
 var Follow = require('../models/follow');
+const publication = require('../models/publication');
 
 function test(req,res){
     res.status(200).send({message:'this is a test from publication controller'});    
@@ -32,12 +33,13 @@ function savePost(req,res){
     })
 } 
 
-function getPost(req,res){
+function getPosts(req,res){
     var page = 1;
     if(req.params.page){
         page = req.params.page;
     }
     var itemsPerPage = 4;
+
     Follow.find({user: req.user.sub}).populate('followed').exec((err,follows)=>{
         if(err) return res.status(500).send({message:'error al devolver el seguimiento'});
 
@@ -59,8 +61,19 @@ function getPost(req,res){
     });
 }
 
+function getPost(req, res){
+    var publicationId = req.params.id;
+
+    Publication.findById(publicationId,(err,publication)=>{
+        if(err) return res.status(500).send({message:'error al devolver las publicaciones'});
+        if(!publication) return res.status(404).send({message:'no hay publicaciones'});
+        return res.status(200).send({publication});
+    });
+}
+
 module.exports = {
     test,
     savePost,
+    getPosts,
     getPost
 }
