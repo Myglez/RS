@@ -79,10 +79,72 @@ function deletePost(req, res){
     });
 }
 
+function uploadImage(req,res){
+    var publicationId = req.params.id;
+
+    if(req.files){
+        // ruta del archivo
+        var file_Path = req.files.image.path;
+        // corta la ruta desde las "/" y lo convierte en un array
+        var file_split = file_Path.split('/');
+        //contiene el nombre del archivo
+        var file_name = file_split[2];
+        //toma el nombre y lo corta desde el "." y lo convierte en un array 
+        var ext_split = file_name.split('.');
+
+        //toma la extension del arreglo
+        var file_ext = ext_split[1];
+
+        if(file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif'){
+            //actualiza el documento de la publicacion
+            Publication.findOne({'user':req.user.sub, '_id':publicationId}).exec((err, publication)=>{
+                if(publication){
+
+                    Publication.findByIdAndUpdate(publicationId, {file: file_name}, {new:true}, (err, publicationUpdated)=>{
+
+                        if(err) return res.status(500).send({message:'error en la peticion'});
+                        if(!publicationUpdated) return res.status(404).send({message:'no se ha podido actualizar el usuario'});
+                        return res.status(200).send({publication: publicationUpdated});
+        
+                    });
+                }else{
+                    return res.status(200).send({message:'no eres el dueño de esta publicacion'});
+                }
+            });
+        }else{
+            return removeFilesOfUploads(res, file_Path, 'extension no valida');
+        }
+
+    }else{
+        return res.status(200).send({message:'no se han subido archivos'});
+    }
+}
+
+function removeFilesOfUploads(res,file_Path,message){
+    fs.unlink(file_Path, (err)=>{
+        return res.status(200).send({message: message});
+    });
+}
+
+function getImageFile(req,res){
+    var image_file = req.params.imageFile
+    var path_file = './uploads/publications/'+image_file;
+
+    fs.exists(path_file,(exists)=>{
+        if(exists){
+            res.sendFile(path.resolve(path_file));
+        }else{
+            res.status(200).send({message:'no existe la imagen'});
+        }
+    });
+}
+
 module.exports = {
     test,
     savePost,
     getPosts,
     getPost,
-    deletePost
+    deletePost,
+    uploadImage,
+    getImageFile
 }
