@@ -8,9 +8,9 @@ var MessageSchema = Schema({
     viewed: String,
     created_at: String,
     //guarda el usuario que envia el mensaje
-    emitter: { type: Schema.ObjectId, ref: 'user' },
+    emitter: { type: Schema.ObjectId, ref: 'User' },
     //guarda el id del usuario que recive el mensaje
-    receiver: { type: Schema.ObjectId, ref: 'user' }
+    receiver: { type: Schema.ObjectId, ref: 'User' }
 })
 
 module.exports = mongoose.model('Message',MessageSchema);
