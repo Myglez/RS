@@ -22,6 +22,7 @@ function saveMessage(req,res){
     message.receiver = params.receiver;
     message.text = params.text
     message.created_at = moment().unix();
+    message.viewed = 'false';
 
     message.save((err,MessageStored)=>{
         if(err) return res.status(500).send({message: 'Error en la peticion'});
@@ -50,6 +51,7 @@ function getMessages(req,res){
         });
     });
 }
+
 function getSendMessages(req,res){
     var userId = req.user.sub;
     var page = 1;
@@ -71,9 +73,21 @@ function getSendMessages(req,res){
 
 }
 
+function countUnreadMessages(req,res){
+    
+    var userId = req.user.sub;
+    Message.count({receiver:userId, viewed:'false'}).exec((err,count)=>{
+        if(err) return res.status(500).send({message: 'Error en la peticion'});
+        return res.status(200).send({
+            'unread':count
+        })
+    });
+}
+
 module.exports = {
     test,
     saveMessage,
     getMessages,
-    getSendMessages
+    getSendMessages,
+    countUnreadMessages
 }
