@@ -9,5 +9,6 @@ api.post('/message',md_auth.ensureAuth, MessageController.saveMessage);
 api.get('/my-messages/:page?',md_auth.ensureAuth, MessageController.getMessages);
 api.get('/my-send-messages/:page?',md_auth.ensureAuth, MessageController.getSendMessages);
 api.get('/unread-messages',md_auth.ensureAuth, MessageController.countUnreadMessages);
+api.get('/messages',md_auth.ensureAuth, MessageController.markAsReadMessage);
 
 module.exports = api;

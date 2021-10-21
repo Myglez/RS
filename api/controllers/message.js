@@ -84,10 +84,22 @@ function countUnreadMessages(req,res){
     });
 }
 
+function markAsReadMessage(req,res){
+    var userId = req.user.sub;
+
+    Message.updateMany({receiver:userId, viewed:'false'}, {viewed:'true'}, {"multi":true}, (err, updatedMessage)=>{
+        if(err) return res.status(500).send({message: 'Error en la peticion'});
+        return res.status(200).send({
+            messages: updatedMessage
+        });
+    });
+}
+
 module.exports = {
     test,
     saveMessage,
     getMessages,
     getSendMessages,
-    countUnreadMessages
+    countUnreadMessages,
+    markAsReadMessage
 }
